@@ -1,6 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
+  customType,
   foreignKey,
   json,
   pgTable,
@@ -10,6 +11,12 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+
+const vector1536 = customType<{ data: number[]; driverData: string }>({
+  dataType: () => "vector(1536)",
+  fromDriver: (value) => value.slice(1, -1).split(",").map(Number),
+  toDriver: (value) => "[" + value.join(",") + "]",
+});
 
 export const user = pgTable("User", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
@@ -134,3 +141,52 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const studyNote = pgTable("study_notes", {
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  title: varchar("title", { length: 160 }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export type StudyNote = InferSelectModel<typeof studyNote>;
+
+export const studyChunk = pgTable("study_chunks", {
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  embedding: vector1536("embedding").notNull(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  noteId: uuid("note_id")
+    .notNull()
+    .references(() => studyNote.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export type StudyChunk = InferSelectModel<typeof studyChunk>;
+
+export const studyMessage = pgTable("study_messages", {
+  answer: text("answer").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  question: text("question").notNull(),
+  sources: json("sources").notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export type StudyMessage = InferSelectModel<typeof studyMessage>;

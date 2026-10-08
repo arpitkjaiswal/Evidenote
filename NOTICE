@@ -1,0 +1,8 @@
+StudyMate AI includes material derived from Vercel's Chatbot template:
+https://github.com/vercel/chatbot
+
+Copyright 2024 Vercel, Inc. The upstream project is licensed under the Apache
+License, Version 2.0; see LICENSE.
+
+StudyMate AI changes the upstream project and adds a private notes library,
+PostgreSQL/pgvector semantic retrieval, cited study answers, and setup guides.
