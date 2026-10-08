@@ -1,25 +1,25 @@
-# StudyMate roadmap
+# Evidenote roadmap
 
-The current starter covers sign-in, a private notes library, text and Markdown import, semantic retrieval, cited answers, and saved study history. The first launch still needs your database and AI credentials.
+The current web MVP supports authenticated text/Markdown notes, semantic retrieval, cited answers, JSON export, and deletion of study data.
 
-## Set up before the first run
+## Before a first run
 
 1. Create a Neon Postgres project and copy its pooled connection string into `.env.local` as `POSTGRES_URL`.
-2. Set `AUTH_SECRET` to a new random value and add an AI Gateway key as `AI_GATEWAY_API_KEY`.
-3. Run `pnpm install`, `pnpm db:migrate`, then `pnpm dev`.
-4. Open `/study`, create a note, and ask a question. Keep `.env.local` private.
+2. Set a new `AUTH_SECRET` and an AI Gateway key as `AI_GATEWAY_API_KEY`.
+3. Run `pnpm install`, `pnpm db:migrate`, and `pnpm dev`.
+4. Add a small note, ask a question, inspect the citations, export the data, and try deletion with disposable data.
 
-See [Database and AI setup](DATABASE_AND_AI.md) for details.
+See [Database and AI setup](DATABASE_AND_AI.md).
 
-## Build toward a production release
+## Build toward a strong portfolio release
 
-Work through these in order and keep each change in a small branch:
+1. **Measure retrieval quality:** label a small question-to-passage dataset and report Recall@k or MRR alongside answer citation coverage. Do not publish performance numbers until measured.
+2. **Organize knowledge:** add courses or collections, note search, editing, and safe re-indexing of changed notes.
+3. **Support more sources:** add PDF extraction with file, page, and text limits; show import progress and failures.
+4. **Make ingestion resilient:** move embedding work to a queue with idempotency keys, retries, rate limits, and explicit indexing states.
+5. **Improve study tools:** generate flashcards and quizzes from retrieved passages, and cite the source for every generated item.
+6. **Add a native Apple client:** build an accessible SwiftUI companion with local caching and clear controls over what syncs to the server. Do not claim on-device AI unless it is actually implemented.
+7. **Prepare deployment:** use separate development and production databases, server-only secrets, backups, budget limits, and verified export/deletion behavior.
 
-1. **Validate the core flow:** add automated coverage for note ownership, indexing, retrieval, citations, and deletion; run lint, type checks, and a production build.
-2. **Organize the library:** add courses or collections, note search, editing, and a way to re-index changed notes.
-3. **Support more sources:** add PDF extraction with file size and page limits, and show import progress and failures.
-4. **Improve study tools:** generate quizzes and flashcards from retrieved passages, with citations on each answer.
-5. **Measure answer quality:** keep a small set of sample notes and questions, check retrieval relevance and citation coverage, and compare changes before switching models or chunking rules.
-6. **Prepare deployment:** set server-only environment variables in the hosting dashboard, use a separate production database, configure backups and usage limits, and verify sign-in and data deletion on the deployed site.
+These steps create interview discussion around data ownership, retrieval quality, asynchronous systems, and privacy tradeoffs. The [system design](SYSTEM_DESIGN.md) calls out current limits; the [portfolio guide](PORTFOLIO.md) lists truthful resume wording.
 
-For each feature, ask an AI coding assistant to inspect the existing routes and migration first, implement one small step, explain the diff, and review access control and failure states. Use the prompts in [AI development workflow](AI_WORKFLOW.md). Never give an assistant your `.env.local` file or private course material.

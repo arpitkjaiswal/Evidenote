@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   BookOpen,
+  Download,
   FileText,
   LoaderCircle,
   MessageCircle,
@@ -54,6 +55,8 @@ export default function StudyPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [asking, setAsking] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [deletingStudyData, setDeletingStudyData] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -169,6 +172,66 @@ export default function StudyPage() {
     }
   }
 
+  async function exportStudyData() {
+    setExporting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/study/data");
+      if (!response.ok) {
+        const payload = await response.json();
+        throw new Error(payload.error || "Could not export study data.");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "evidenote-export.json";
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (exportError) {
+      setError(
+        exportError instanceof Error
+          ? exportError.message
+          : "Could not export study data."
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function deleteStudyData() {
+    const confirmed = window.confirm(
+      "Permanently delete all your Evidenote notes, indexed passages, and study history? Export a copy first if you want to keep it."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingStudyData(true);
+    setError("");
+    try {
+      const response = await fetch("/api/study/data", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: "DELETE_STUDY_DATA" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "Could not delete study data.");
+      }
+      setNotes([]);
+      setMessages([]);
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Could not delete study data."
+      );
+    } finally {
+      setDeletingStudyData(false);
+    }
+  }
+
   async function askQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const asked = question.trim();
@@ -231,7 +294,7 @@ export default function StudyPage() {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                StudyMate AI
+                Evidenote
               </p>
               <h1 className="text-xl font-semibold tracking-tight">Study workspace</h1>
             </div>
@@ -400,7 +463,7 @@ export default function StudyPage() {
                   </div>
                   <h3 className="mt-5 text-lg font-semibold">Turn notes into understanding</h3>
                   <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                    Ask a question. StudyMate searches your notes, builds an answer from the most relevant passages, and shows its sources.
+                    Ask a question. Evidenote searches your notes, builds an answer from the most relevant passages, and shows its sources.
                   </p>
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {[
@@ -498,6 +561,43 @@ export default function StudyPage() {
                 Keep AI answers tied to sources; verify important details in your original notes.
               </p>
             </form>
+          </section>
+
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6 lg:col-span-2">
+            <div className="mb-3">
+              <h2 className="text-base font-semibold">Privacy and your data</h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Your notes and study history are stored in the configured database. Saving notes sends their text to AI Gateway for embeddings; asking a question sends the question and retrieved passages for an answer.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-xs font-medium transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={exporting}
+                onClick={() => void exportStudyData()}
+                type="button"
+              >
+                {exporting ? (
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <Download className="size-3.5" />
+                )}
+                {exporting ? "Preparing export…" : "Export my data"}
+              </button>
+              <button
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-destructive/30 px-3 text-xs font-medium text-destructive transition hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={deletingStudyData}
+                onClick={() => void deleteStudyData()}
+                type="button"
+              >
+                {deletingStudyData ? (
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="size-3.5" />
+                )}
+                {deletingStudyData ? "Deleting…" : "Delete study data"}
+              </button>
+            </div>
           </section>
         </div>
       </div>

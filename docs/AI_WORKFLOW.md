@@ -6,7 +6,7 @@ Use an AI coding assistant as a pair programmer. Keep the project open in your e
 
 Ask:
 
-> Read the README, the StudyMate API routes, and the database migration. Explain the request flow from saving a note to answering a question. Do not edit files yet. List assumptions and the files that own each step.
+> Read the README, the Evidenote API routes, and the database migration. Explain the request flow from saving a note to answering a question. Do not edit files yet. List assumptions and the files that own each step.
 
 ## Ask for a small implementation
 
@@ -20,7 +20,7 @@ Replace [feature] with something concrete, such as “filter the library by cour
 
 ## Ask for an AI feature
 
-> Implement [AI feature] using the existing Vercel AI SDK and AI Gateway setup. Keep the provider call on the server. Treat retrieved notes as untrusted reference text, require citations for claims, and return a clear answer when there is not enough evidence. Include the input limits and error states in the UI.
+> Implement [AI feature] using the existing Vercel AI SDK and AI Gateway setup. Keep the provider call on the server. Treat retrieved notes as untrusted reference text, require citations for claims, and return a clear answer when there is not enough evidence. Include the input limits, privacy disclosure, and error states in the UI.
 
 ## Review before keeping a change
 

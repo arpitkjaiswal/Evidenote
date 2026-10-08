@@ -1,53 +1,67 @@
-# StudyMate AI
+# Evidenote
 
-StudyMate is a private study workspace. Add course notes, ask questions against your own material, and see which passages support each answer.
+**Knowledge you can verify.** Evidenote is a private, evidence-grounded learning workspace: save your notes, ask questions across them, and inspect the passages behind every answer.
 
-## What it does
+## Why this project
 
-- Saves notes per signed-in user in PostgreSQL.
-- Imports pasted text or local .txt and .md files.
-- Splits notes into overlapping passages and creates embeddings.
-- Uses pgvector similarity search to retrieve relevant passages.
-- Answers with the Vercel AI SDK and lists the source passages.
-- Stores study questions and answers in your database.
+Most AI study tools ask users to trust a generated answer. Evidenote makes the evidence visible and gives people control to export or delete their study data. It is a full-stack portfolio project focused on retrieval quality, user-scoped data access, and transparent AI data flows.
 
-The app is based on [Vercel's Chatbot template](https://github.com/vercel/chatbot), which provides the Next.js app, authentication, chat UI, and database foundation. The upstream template is licensed under Apache 2.0; its LICENSE file is kept in this repository.
+## Features
+
+- Sign in and keep study notes and Q&A scoped to your account.
+- Paste notes or import `.txt` and `.md` files.
+- Create overlapping text chunks and 1,536-dimensional embeddings.
+- Retrieve relevant passages with PostgreSQL, pgvector, and cosine HNSW search.
+- Generate answers through the Vercel AI SDK and AI Gateway, with source passages shown in the UI.
+- Export your notes and study history as JSON, or delete that study data from the app.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] -->|authenticated note| N[Next.js API]
+  N -->|chunked text| E[AI Gateway embeddings]
+  N -->|note and vectors| P[(Neon Postgres + pgvector)]
+  B -->|question| Q[Next.js API]
+  Q -->|question embedding| E
+  Q -->|user-scoped top-k search| P
+  P -->|passages| Q
+  Q -->|answer with source numbers| L[AI Gateway language model]
+  L --> Q
+  Q -->|answer and citations| B
+```
+
+Notes are saved with their indexed chunks in one database transaction. Retrieval filters by the authenticated user in the query function. Read the [system design](docs/SYSTEM_DESIGN.md) and [privacy/data flow](docs/PRIVACY.md) before extending the project.
 
 ## Run locally
 
-You need Node.js 20 or newer, pnpm, a Neon Postgres project, and a Vercel AI Gateway key for local AI requests.
+Requirements: Node.js 20+, pnpm, a Neon Postgres database, and a Vercel AI Gateway key.
 
-1. Install packages with **pnpm install**.
-2. Copy **.env.example** to **.env.local**.
-3. Set **AUTH_SECRET**, **POSTGRES_URL**, and **AI_GATEWAY_API_KEY** in **.env.local**.
-4. Apply the database migrations with **pnpm db:migrate**.
-5. Start the app with **pnpm dev**.
-6. Open **http://localhost:3000/study**, add a note, and ask a question.
+```bash
+pnpm install
+cp .env.example .env.local
+```
 
-The starter creates a guest session automatically. Register an account to keep your notes separate from the guest account.
+Set `AUTH_SECRET`, `POSTGRES_URL`, and `AI_GATEWAY_API_KEY` in `.env.local`, then run:
 
-## Connect the database and AI
+```bash
+pnpm db:migrate
+pnpm dev
+```
 
-Follow [Database and AI setup](docs/DATABASE_AND_AI.md) for the Neon connection string, pgvector migration, AI Gateway key, and deployment steps. Keep **.env.local** private; it is ignored by Git.
+Open [http://localhost:3000/study](http://localhost:3000/study). The starter creates a guest session; register an account to keep data under a persistent account. See [Database and AI setup](docs/DATABASE_AND_AI.md) for credentials, migrations, and deployment.
 
-## How the answer is grounded
+## Engineering notes
 
-1. Your note text is divided into short overlapping passages.
-2. The AI Gateway creates a 1,536-dimensional embedding for each passage.
-3. PostgreSQL stores the text and vectors in **study_chunks**.
-4. A question is embedded and matched against only the signed-in user's passages.
-5. The model receives the question and the closest passages, then returns an answer with source numbers.
+This is a portfolio MVP, not a claim of production scale. Indexing runs synchronously and note input is capped. The [system design](docs/SYSTEM_DESIGN.md) explains the current tradeoffs and a scale-up path; the [portfolio guide](docs/PORTFOLIO.md) has accurate resume bullets and interview discussion points.
 
-Notes and question history stay in the configured database. Text sent to the AI Gateway is used for embedding and answer generation. The app does not currently extract PDF files.
+The model receives note text for embeddings and retrieved passages for answer generation. Evidenote does not currently provide offline or on-device AI. Review [Privacy and data flow](docs/PRIVACY.md) before using sensitive material.
 
-## Using an AI coding assistant
+## Roadmap
 
-See [AI development workflow](docs/AI_WORKFLOW.md) for prompts to ask for a plan, a small implementation, database changes, and review. Keep API keys out of prompts and commits.
+Next steps include course organization, PDF extraction, asynchronous indexing, flashcards, and a retrieval evaluation set. See the [roadmap](docs/ROADMAP.md) and [AI development workflow](docs/AI_WORKFLOW.md).
 
-## Next steps
+## Attribution
 
-The current version supports text and Markdown notes. It does not yet extract PDFs, organize notes into courses, or generate quizzes. See the [roadmap](docs/ROADMAP.md) for the launch setup and a suggested order for adding those features.
+Evidenote is derived from [Vercel's Chatbot template](https://github.com/vercel/chatbot). The upstream Apache License 2.0 is retained in [LICENSE](LICENSE); see [NOTICE](NOTICE) for attribution and the changes made.
 
-## License and attribution
-
-StudyMate changes the Vercel Chatbot template. The original template license is Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE) for attribution.

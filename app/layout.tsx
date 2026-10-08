@@ -8,8 +8,8 @@ import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   description:
-    "A private study workspace that answers questions from your own course notes.",
-  title: "StudyMate AI",
+    "A private, evidence-grounded learning workspace for your own notes.",
+  title: "Evidenote — Knowledge you can verify",
 };
 
 export const viewport = {

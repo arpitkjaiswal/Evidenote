@@ -3,6 +3,6 @@ import { registerOTel } from "@vercel/otel";
 import { registerTelemetry } from "ai";
 
 export function register() {
-  registerOTel({ serviceName: "studymate-ai" });
+  registerOTel({ serviceName: "evidenote" });
   registerTelemetry(new OpenTelemetry());
 }
