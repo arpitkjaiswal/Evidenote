@@ -6,7 +6,6 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { getLanguageModel } from "@/lib/ai/providers";
 import { client } from "@/lib/db/queries";
 
-export const runtime = "nodejs";
 
 type RetrievedChunk = {
   chunk_id: string;
