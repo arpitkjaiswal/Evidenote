@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { client } from "@/lib/db/queries";
 
-export const runtime = "nodejs";
 
 const MAX_NOTE_CHARACTERS = 50_000;
 const MAX_CHUNKS = 70;
