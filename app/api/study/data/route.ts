@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { client } from "@/lib/db/queries";
 
-export const runtime = "nodejs";
 
 type ExportNote = {
   id: string;
